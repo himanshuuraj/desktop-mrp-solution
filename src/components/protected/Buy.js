@@ -1,5 +1,5 @@
 import React, { Component } from 'react'
-import { Grid, Segment, Statistic, Card, Message, Dropdown } from 'semantic-ui-react'
+import { Grid, Segment, Statistic, Card, Message, Dropdown, Button, Image, Input } from 'semantic-ui-react'
 import Product from './Product';
 import { getShops, getPrice, getProduct } from "./../../helpers/db";
 import { urlToGetImage } from "./../../config/constants";
@@ -63,19 +63,30 @@ export default class Cart extends Component {
       let riceProduct = productsList.rice || {};
       let brokenProduct = productsList.broken || {};
 
-      Object.entries(ravvaPrice).map((item, index) => {
+      Object.entries(ravvaPrice).map((item) => {
         item[1]['master_weight'] = ravvaProduct[item[0]].master_weight;
         item[1]["name"] = ravvaProduct[item[0]].name;
+        item[1]["addedToCart"] = false;
+        item[1]["quintals"] = 0;
+        item[1]["bags"] = 0;
       });
 
-      Object.entries(ricePrice).map((item, index) => {
+      Object.entries(ricePrice).map((item) => {
         item[1]['master_weight'] = riceProduct[item[0]].master_weight;
         item[1]["name"] = riceProduct[item[0]].name;
+        item[1]["addedToCart"] = false;
+        item[1]["quintals"] = 0;
+        item[1]["bags"] = 0;
+        item[1]["totalPrice"] = 0;
       });
 
-      Object.entries(brokenPrice).map((item, index) => {
+      Object.entries(brokenPrice).map((item) => {
         item[1]['master_weight'] = brokenProduct[item[0]].master_weight;
         item[1]["name"] = brokenProduct[item[0]].name;
+        item[1]["addedToCart"] = false;
+        item[1]["quintals"] = 0;
+        item[1]["totalPrice"] = 0;
+        item[1]["bags"] = 0;
       });
 
 
@@ -92,22 +103,65 @@ export default class Cart extends Component {
     });
   }
 
+  changeTab = (type) => {
+    let prices = this.state.prices;
+    if(!prices){
+      alert("There is no prices for this");
+      return;
+    }
+    let priceArray = prices[type];
+    if(priceArray){
+      priceArray = Object.entries(priceArray);
+    }else{
+      priceArray = [];
+    }
+    this.setState({ priceArray, selectedTab : type });
+  }
+
+  updateUI = (obj) => {
+    let priceArray = this.state.priceArray;
+    let { value, index, item } = obj;
+    let master_weight = item.master_weight.replace("KG", "");
+    if(obj.type == "bags"){
+      let quintals = master_weight * value;
+      priceArray[index][1]["quintals"] = quintals;
+      priceArray[index][1]["bags"] = value;
+      priceArray[index][1]["totalPrice"] = quintals * item.Agent;
+    }else if(obj.type == "quintals"){
+      let bags = value / master_weight;
+      priceArray[index][1]["quintals"] = value;
+      priceArray[index][1]["bags"] = bags;
+      priceArray[index][1]["totalPrice"] = value * item.Agent;
+    }
+    this.setState({ priceArray });
+  }
+
+  toggleInCart = (obj) => {
+    let { index } = obj; 
+    let { priceArray } = this.state;
+    priceArray[index][1]["addedToCart"] = !priceArray[index][1]["addedToCart"];
+    this.setState({ priceArray });
+  }
+
   render() {
     return (
       <div className="buy head">
         <h1>Products</h1>
-        <Message visible className="blink">This page is under construction. DO NOT USE</Message>
+        {/* <Message visible className="blink">This page is under construction. DO NOT USE</Message> */}
         {
           this.state.shops && this.state.shops.length > 0 && <h2>Select Shop</h2>
         }
         {
           this.state.shops && this.state.shops.length > 0 && (
             <Dropdown
-              placeholder='Select Friend'
+              placeholder='Select Shop'
               fluid
               selection
               onChange={this.handleChange}
               options={this.state.shops}
+              style={{
+                marginBottom : 20
+              }}
             />
           )
         }
@@ -123,6 +177,102 @@ export default class Cart extends Component {
             </Grid.Column>
           </Grid.Row>
         </Grid> */}
+        {
+          this.state.selectedShop && (
+        <Grid columns={3} divided style={{
+          marginLeft : 20
+        }}>
+          <Grid.Row>
+            <Grid.Column>
+              <Button style={{
+                width : '100%',
+                fontSize: 14,
+                backgroundColor : this.state.selectedTab === "rice" ? "#16a085" : undefined,
+                color : this.state.selectedTab === "rice" ? "white" : undefined
+              }}
+              onClick={() => this.changeTab('rice')}
+              > Rice </Button>
+            </Grid.Column>
+            <Grid.Column >
+              <Button style={{
+                width : '100%',
+                fontSize: 14,
+                backgroundColor : this.state.selectedTab === "ravva" ? "#16a085" : undefined,
+                color : this.state.selectedTab === "ravva" ? "white" : undefined
+              }}
+              onClick={() => this.changeTab('ravva')}
+              > Ravva </Button>
+            </Grid.Column>
+            <Grid.Column>
+              <Button style={{
+                width : '100%',
+                fontSize: 14,
+                backgroundColor : this.state.selectedTab === "broken" ? "#16a085" : undefined,
+                color : this.state.selectedTab === "broken" ? "white" : undefined
+              }}
+              onClick={() => this.changeTab('broken')}
+              > Broken </Button>
+            </Grid.Column>
+          </Grid.Row>
+        </Grid>)
+        }
+        {
+          this.state.priceArray && (
+            this.state.priceArray.map((item, index) => {
+              return (
+                <Grid key={index}>
+                  <Grid.Row style={{ height : 200, marginLeft : '2%', marginRight: '2%', borderBottom : '1px solid #16a085'}}>
+                    <Grid.Column style={{width : '20%', display: 'flex', justifyContent : 'center', alignItems : 'center'}}>
+                      <Image src={this.getImageUrl(item[0], this.state.selectedTab)} size='small' style={{ height : 160 }} />
+                    </Grid.Column>
+                    <Grid.Column style={{width : '30%', display: 'flex', flexDirection : 'column', justifyContent : 'center', alignItems : 'center'}}>
+                      <h5>{item[1].name}</h5>
+                      <h5>Master Weight {item[1].master_weight}</h5>
+                      <h5>Rs. {item[1].Agent} / Quintal</h5>
+                    </Grid.Column>
+                    <Grid.Column style={{width : '30%', display: 'flex', flexDirection : 'column', justifyContent : 'center', alignItems : 'center'}}>
+                      <h5>
+                        Quintal
+                      </h5>
+                        <Input
+                        type = {'number'}
+                        value={item[1].quintals}
+                        onChange={(e, data) => {
+                          this.updateUI({ type : 'quintals', value : data.value, index, item : item[1]});
+                        }}
+                        placeholder='Quintal' />
+                      <h5>
+                        Bags
+                      </h5>
+                        <Input 
+                        value={item[1].bags}
+                        onChange={(e, data) => {
+                          this.updateUI({ type : 'bags', value : data.value, index, item : item[1]});
+                        }}
+                        placeholder='Bags' />
+                      <h5>
+                        Total Price: { item[1].totalPrice }
+                      </h5>
+                    </Grid.Column>
+                    <Grid.Column style={{width : '20%', display: 'flex', flexDirection : 'column', justifyContent : 'center', alignItems : 'center'}}>
+                        <Button 
+                        style={{
+                          backgroundColor : item[1].addedToCart ? '#16a085' : 'coral',
+                          width: "80%",
+                          fontSize: 14,
+                          color : 'white'
+                        }}
+                        onClick={e => {
+                          this.toggleInCart({index})
+                        }}>{ item[1].addedToCart ? "Added to Cart" : "Add to Cart"}</Button>
+                    </Grid.Column>
+                  </Grid.Row>
+                </Grid>
+              );
+            })
+          )
+        }
+
       </div>
     )
   }
