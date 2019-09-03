@@ -7,7 +7,7 @@ const config = {
   projectId: "stage-db-b035c",
   storageBucket: "stage-db-b035c.appspot.com",
   messagingSenderId: "950510485815"
-}
+};
 
 firebase.initializeApp(config)
 
@@ -15,3 +15,13 @@ export const ref = firebase.database().ref();
 export const db = firebase.database();
 export const authRef = firebase.auth;
 export const urlToGetImage = "https://mrps-orderform.firebaseapp.com/";
+
+let cartArray = [];
+
+export const updateCartArray = (data) => {
+  cartArray = data;
+}
+
+export const getCartArray = () => {
+  return cartArray;
+}

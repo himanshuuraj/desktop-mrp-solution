@@ -1,7 +1,7 @@
 import React, { Component } from 'react'
 import { Grid, Segment, Input, Confirm } from 'semantic-ui-react'
 import Lorry from './Lorry'
-import { ref } from '../../config/constants'
+import { ref, getCartArray } from '../../config/constants'
 import { onFetchUserMobileNumber, getUserMobileNumber } from '../../helpers/auth'
 import { Header, Card, Table, Modal, Button, Message, Label, Icon, Loader } from 'semantic-ui-react'
 
@@ -33,7 +33,8 @@ export default class Cart extends Component {
           totalPrice: 0,
           totalWeight: 0
         }
-      }
+      },
+      renderYourOrder : false
     };
   }
 
@@ -50,6 +51,7 @@ export default class Cart extends Component {
       console.log('MOBILE IS ALREADY IN THE SESSION');
       this.fetchSubOrders(mobile);
     }
+    console.log(getCartArray(), "CartArray");
   }
 
   fetchSubOrders(mobile) {
@@ -109,16 +111,52 @@ export default class Cart extends Component {
 
   notificationOpen = () => this.setState({ notificationOpen: true })
   handleNotificationConfirm = () => this.setState({ notificationOpen: false })
-  handleNotificationCancel = () => this.setState({ notificationOpen: false })
+  handleNotificationCancel = () => this.setState({ notificationOpen: false });
+
+  renderYourOrder = () => {
+    return (
+      <div style={{ position: 'fixed',
+              top: 0,
+              bottom: 0,
+              left: 0,
+              right: 0,
+              zIndex: 9999,
+              margin: 'auto', 
+              backgroundColor : 'rgb(0,0,0,0.2)'}}>
+                <div style={{margin: '10%',backgroundColor: 'white',padding: '2%'}}>
+                  <div style={{ display : 'flex' }}>
+                    <h2 style={{ flex : 1 }}>
+                      Your order
+                    </h2>
+                    <div 
+                    onClick = {e => {
+                      this.setState(
+                        { renderYourOrder : false}
+                      );
+                    }}
+                    style={{ width : 40, height : 40, display: 'flex', right: '11%', justifyContent: 'center', alignItems: 'center', cursor : 'pointer' }}>
+                      <span style={{ fontSize : 32 }}>X</span>
+                    </div>
+                  </div>
+                  <div>
+                  </div>
+                  <div style={{ marginTop : 20 }}>
+                    
+                  </div>
+                </div>
+            </div>
+    );
+  }
 
   render() {
     const { currentLoad } = this.state;
+    const { modalOrderId, modalOpen, modelOrderData, modalLoading } = this.state;
     const notificationConfirmLink = <a href={`view/${this.state.notificationOrderId}`} target="_blank"><strong>Take me to Order</strong></a>;
     // <Input label={`currentLoad`} placeholder='currentLoad' width={4} onChange={ this.onChangeValue.bind(this, 'currentLoad')} value={currentLoad} />
 
 
     return (
-      <div className="cart head">
+      <div className="cart head" style={{position : 'relative'}}>
         <Confirm
           basic
           open={this.state.notificationOpen}
@@ -143,7 +181,15 @@ export default class Cart extends Component {
                   Field Agents Orders
                 </Header>
                 { this.renderSubOrders() }
-                { this.renderViewOrderModal() }
+                <Button style={{
+                  width : '100%',
+                  backgroundColor : '#2185d0'
+                }} onClick={e => {
+                  this.setState({
+                    renderYourOrder : true
+                  });
+                }}>View Your Order</Button>
+                {/* { this.renderViewOrderModal() } */}
               </Segment>
             </Grid.Column>
             <Grid.Column width={10}>
@@ -159,6 +205,46 @@ export default class Cart extends Component {
             </Grid.Column>
           </Grid.Row>
         </Grid>
+        
+        {
+          modalOpen && (
+            <div style={{ position: 'fixed',
+              top: 0,
+              bottom: 0,
+              left: 0,
+              right: 0,
+              zIndex: 9999,
+              margin: 'auto', 
+              backgroundColor : 'rgb(0,0,0,0.2)'}}>
+                <div style={{margin: '10%',backgroundColor: 'white',padding: '2%'}}>
+                  <div style={{ display : 'flex' }}>
+                    <h2 style={{ flex : 1 }}>
+                      Details of order : [ <span className="head">{ modalOrderId }</span> ]
+                    </h2>
+                    <div 
+                    onClick = {e => {
+                      this.closeTheModal();
+                    }}
+                    style={{ width : 40, height : 40, display: 'flex', right: '11%', justifyContent: 'center', alignItems: 'center', cursor : 'pointer' }}>
+                      <span style={{ fontSize : 32 }}>X</span>
+                    </div>
+                  </div>
+                  <div>
+                  { this.renderOrderShopsAndItems(modelOrderData) }
+                  </div>
+                  <div style={{ marginTop : 20 }}>
+                    <Button primary content='CLOSE' onClick={ this.closeTheModal.bind(this) } />
+                    <Button negative content='REJECT' onClick={this.rejectOrder.bind(this,modalOrderId,modelOrderData)} />
+                    <Button positive icon='checkmark' labelPosition='right' content='ACCEPT' onClick={this.acceptOrder.bind(this,modalOrderId,modelOrderData)} />
+                  </div>
+                </div>
+            </div>
+          )
+        }
+        
+        {
+          this.state.renderYourOrder && this.renderYourOrder()
+        }
       </div>
     )
   };
@@ -169,14 +255,32 @@ export default class Cart extends Component {
       return <Loader active inline='centered' size='massive'/>
     }
 
+    if(this.state.modalOpen){
+      return (
+      <div style={{ position : "absolute", justifyContent : 'center', alignItems : 'center'}}>
+          <h2>
+            Details of order : [ <span className="head">{ modalOrderId }</span> ]
+          </h2>
+          <div>
+          { this.renderOrderShopsAndItems(modelOrderData) }
+          </div>
+          <div>
+            <Button primary content='CLOSE' onClick={ this.closeTheModal.bind(this) } />
+            <Button negative content='REJECT' onClick={this.rejectOrder.bind(this,modalOrderId,modelOrderData)} />
+            <Button positive icon='checkmark' labelPosition='right' content='ACCEPT' onClick={this.acceptOrder.bind(this,modalOrderId,modelOrderData)} />
+          </div>
+      </div>
+      );
+    }
+
     return (
       <Modal  open={modalOpen} onClose={this.closeTheModal.bind(this)} className="viewModal">
         <Modal.Header>
           Details of order : [ <span className="head">{ modalOrderId }</span> ]
         </Modal.Header>
-        <Modal.Content scrolling>
+        <div>
           { this.renderOrderShopsAndItems(modelOrderData) }
-        </Modal.Content>
+        </div>
         <Modal.Actions>
           <Button primary content='CLOSE' onClick={ this.closeTheModal.bind(this) } />
           <Button negative content='REJECT' onClick={this.rejectOrder.bind(this,modalOrderId,modelOrderData)} />

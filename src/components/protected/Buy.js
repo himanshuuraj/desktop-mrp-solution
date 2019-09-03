@@ -2,7 +2,7 @@ import React, { Component } from 'react'
 import { Grid, Segment, Statistic, Card, Message, Dropdown, Button, Image, Input } from 'semantic-ui-react'
 import Product from './Product';
 import { getShops, getPrice, getProduct } from "./../../helpers/db";
-import { urlToGetImage } from "./../../config/constants";
+import { urlToGetImage, updateCartArray } from "./../../config/constants";
 
 
 export default class Cart extends Component {
@@ -17,7 +17,8 @@ export default class Cart extends Component {
     this.state = {
       shops : [],
       prices : undefined,
-      productsList : {}
+      productsList : {},
+      cartArray : []
     }
   }
   
@@ -49,6 +50,7 @@ export default class Cart extends Component {
   }
 
   componentDidMount(){
+    updateCartArray([]);
     this.getproductData();
     this.getShopData();
   }
@@ -95,10 +97,18 @@ export default class Cart extends Component {
   }
 
   handleChange = (e, { value }) => {
+    this.setState({
+      priceArray : null, selectedTab : ""
+    });
     this.setState({ selectedShop : value });
     console.log(value.areaId);
     getPrice(value.areaId).then((data) => {
       let prices = data.val();
+      if(!prices){
+        alert("Prices is null for this");
+        this.setState({ selectedShop : null });
+        return;
+      }
       this.changePriceForm(prices);
     });
   }
@@ -138,7 +148,26 @@ export default class Cart extends Component {
 
   toggleInCart = (obj) => {
     let { index } = obj; 
-    let { priceArray } = this.state;
+    let { priceArray, cartArray, selectedShop } = this.state;
+    if(!priceArray[index][1]["addedToCart"]){
+        let cartObj = {
+          key : priceArray[index][0],
+          value : priceArray[index][1],
+          shopId : selectedShop.gst || selectedShop.tin
+        };
+        cartArray.push(cartObj);
+    }else{
+      let key = priceArray[index][0];
+      for(let index = 0; index < cartArray.length; index++){
+        let shopId = selectedShop.gst || selectedShop.tin;
+        if(cartArray[index]["key"] == key && cartArray[index]["shopId"] === shopId){
+          cartArray.splice(index, 1);
+          break;
+        }
+      }
+    }
+    this.setState({ cartArray });
+    updateCartArray(cartArray);
     priceArray[index][1]["addedToCart"] = !priceArray[index][1]["addedToCart"];
     this.setState({ priceArray });
   }
