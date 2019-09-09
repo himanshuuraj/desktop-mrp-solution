@@ -229,7 +229,8 @@ export default class Cart extends Component {
           key : priceArray[index][0],
           value : priceArray[index][1],
           shopId : selectedShop.gst || selectedShop.tin,
-          shopName : selectedShop.name
+          shopName : selectedShop.name,
+          type : this .state.selectedTab
         };
         cartArray.push(cartObj);
     }else{

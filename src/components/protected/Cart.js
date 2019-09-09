@@ -1,9 +1,8 @@
-import React, { Component } from 'react'
-import { Grid, Segment, Input, Confirm } from 'semantic-ui-react'
+import React, { Component } from 'react';
 import Lorry from './Lorry'
-import { ref, getCartArray } from '../../config/constants'
+import { ref, getCartArray, urlToGetImage } from '../../config/constants'
 import { onFetchUserMobileNumber, getUserMobileNumber } from '../../helpers/auth'
-import { Header, Card, Table, Modal, Button, Message, Label, Icon, Loader } from 'semantic-ui-react'
+import { Header, Card, Table, Modal, Message, Label, Icon, Loader, Grid, Segment, Input, Confirm, Image, Button } from 'semantic-ui-react'
 
 
 
@@ -58,7 +57,10 @@ export default class Cart extends Component {
     if(ownCartArray && ownCartArray.length > 0){
       ownCartArray.forEach(item => {
         if(!shopList.includes(item.shopId))
-          shopList.push(item.shopId);
+          shopList.push({
+            shopId : item.shopId,
+            shopName : item.shopName
+          });
       })
     }
     this.setState({
@@ -70,11 +72,14 @@ export default class Cart extends Component {
   fetchSubOrders(mobile) {
     const ordersRef =  `users/${mobile}/suborders`;
     ref.child(ordersRef).once('value', (snap) => {
-      //console.log('SUBORDERS', snap.val());
       this.setState({
         subOrders: snap.val()
       });
     });
+  }
+
+  getImageUrl = (key, selectedItem) => {
+    return urlToGetImage + selectedItem + "_200/" + key + ".png";
   }
 
 
@@ -126,6 +131,24 @@ export default class Cart extends Component {
   handleNotificationConfirm = () => this.setState({ notificationOpen: false })
   handleNotificationCancel = () => this.setState({ notificationOpen: false });
 
+  updateUI = (obj) => {
+    let ownCartArray = this.state.ownCartArray;
+    let { value, index, item } = obj;
+    let master_weight = item.master_weight.replace("KG", "");
+    if(obj.type == "bags"){
+      let quintals = master_weight * value;
+      ownCartArray[index]["value"]["quintals"] = quintals;
+      ownCartArray[index]["value"]["bags"] = value;
+      ownCartArray[index]["value"]["totalPrice"] = quintals * item.Agent;
+    }else if(obj.type == "quintals"){
+      let bags = value / master_weight;
+      ownCartArray[index]["value"]["quintals"] = value;
+      ownCartArray[index]["value"]["bags"] = bags;
+      ownCartArray[index]["value"]["totalPrice"] = value * item.Agent;
+    }
+    this.setState({ ownCartArray });
+  }
+
   renderYourOrder = () => {
     return (
       <div style={{ position: 'fixed',
@@ -157,11 +180,62 @@ export default class Cart extends Component {
                     {
                         this.state.shopList.map((item, index) => {
                             return (<div key={index}>
-                              ShopName - {item}
+                              ShopName - {item.shopName}
                               {
-                                this.state.ownCartArray.map((item1, index) => {
-                                  return (<div>
-                                    {JSON.stringify(item1.value)}
+                                this.state.ownCartArray
+                                .filter((item1) => item1.shopId === item.shopId)
+                                .map((item1, index) => {
+                                  return (<div key={"r" + index}>
+                                      <Grid key={index}>
+                                        <Grid.Row style={{ height : 200, marginLeft : '2%', marginRight: '2%', borderBottom : '1px solid #16a085'}}>
+                                          <Grid.Column style={{width : '20%', display: 'flex', justifyContent : 'center', alignItems : 'center'}}>
+                                            <Image src={this.getImageUrl(item1.key, item1.type)} size='small' style={{ height : 160 }} />
+                                          </Grid.Column>
+                                          <Grid.Column style={{width : '30%', display: 'flex', flexDirection : 'column', justifyContent : 'center', alignItems : 'center'}}>
+                                            <h5>{item1.name}</h5>
+                                            <h5>Master Weight {item1.value.master_weight}</h5>
+                                            <h5>Rs. {item1.value.Agent} / Quintal</h5>
+                                          </Grid.Column>
+                                          <Grid.Column style={{width : '30%', display: 'flex', flexDirection : 'column', justifyContent : 'center', alignItems : 'center'}}>
+                                            <h5>
+                                              Quintal
+                                            </h5>
+                                              <Input
+                                              type = {'number'}
+                                              value={item1.value.quintals}
+                                              onChange={(e, data) => {
+                                                this.updateUI({ type : 'quintals', value : data.value, index, item : item1.value});
+                                              }}
+                                              placeholder='Quintal' />
+                                            <h5>
+                                              Bags
+                                            </h5>
+                                              <Input 
+                                              value={item1.value.bags}
+                                              onChange={(e, data) => {
+                                                this.updateUI({ type : 'bags', value : data.value, index, item : item1.value});
+                                              }}
+                                              placeholder='Bags' />
+                                            <h5>
+                                              Total Price: { item1.value.totalPrice }
+                                            </h5>
+                                          </Grid.Column>
+                                          <Grid.Column style={{width : '20%', display: 'flex', flexDirection : 'column', justifyContent : 'center', alignItems : 'center'}}>
+                                              <Button 
+                                              style={{
+                                                backgroundColor : 'coral',
+                                                width: "80%",
+                                                fontSize: 14,
+                                                color : 'white'
+                                              }}
+                                              onClick={e => {
+                                                let ownCartArray = this.state.ownCartArray;
+                                                ownCartArray.splice(index, 1);
+                                                this.setState({ ownCartArray });
+                                              }}>{ "Remove"} </Button>
+                                          </Grid.Column>
+                                        </Grid.Row>
+                                      </Grid>
                                   </div>)
                                 })
                               }
