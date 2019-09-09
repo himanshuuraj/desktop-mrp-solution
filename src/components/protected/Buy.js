@@ -2,7 +2,7 @@ import React, { Component } from 'react'
 import { Grid, Segment, Statistic, Card, Message, Dropdown, Button, Image, Input } from 'semantic-ui-react'
 import Product from './Product';
 import { getShops, getPrice, getProduct } from "./../../helpers/db";
-import { urlToGetImage, updateCartArray } from "./../../config/constants";
+import { urlToGetImage, updateCartArray, getCartArray } from "./../../config/constants";
 
 
 export default class Cart extends Component {
@@ -50,9 +50,13 @@ export default class Cart extends Component {
   }
 
   componentDidMount(){
-    updateCartArray([]);
+    //updateCartArray([]);
     this.getproductData();
     this.getShopData();
+    this.setState({
+      cartArray : getCartArray()
+    })
+    console.log(this.state);
   }
 
   changePriceForm = (prices) => {
@@ -65,30 +69,100 @@ export default class Cart extends Component {
       let riceProduct = productsList.rice || {};
       let brokenProduct = productsList.broken || {};
 
+      let { cartArray, selectedShop } = this.state;
+
       Object.entries(ravvaPrice).map((item) => {
+        let isAddedToCart = cartArray && (cartArray.length > 0) && cartArray.find((item1) => {
+          if(item1.shopId === (selectedShop.tin || selectedShop.gst)){
+            if(item1.key === item[0]) return true;
+          }
+          return false;
+        });
+        isAddedToCart = !!isAddedToCart;
         item[1]['master_weight'] = ravvaProduct[item[0]].master_weight;
         item[1]["name"] = ravvaProduct[item[0]].name;
-        item[1]["addedToCart"] = false;
-        item[1]["quintals"] = 0;
-        item[1]["bags"] = 0;
+        item[1]["addedToCart"] = isAddedToCart;
+        item[1]["quintals"] = isAddedToCart ? cartArray && (cartArray.length > 0) && cartArray.find((item1) => {
+          if(item1.shopId === (selectedShop.tin || selectedShop.gst)){
+            if(item1.key === item[0]) return true;
+          }
+          return false;
+        }).value.quintals : 0;
+        item[1]["bags"] = isAddedToCart ? cartArray && (cartArray.length > 0) && cartArray.find((item1) => {
+          if(item1.shopId === (selectedShop.tin || selectedShop.gst)){
+            if(item1.key === item[0]) return true;
+          }
+          return false;
+        }).value.bags : 0;
+        item[1]["totalPrice"] = isAddedToCart ? cartArray && (cartArray.length > 0) && cartArray.find((item1) => {
+          if(item1.shopId === (selectedShop.tin || selectedShop.gst)){
+            if(item1.key === item[0]) return true;
+          }
+          return false;
+        }).value.totalPrice : 0;
       });
 
       Object.entries(ricePrice).map((item) => {
+        let isAddedToCart = cartArray && (cartArray.length > 0) && cartArray.find((item1) => {
+          if(item1.shopId === (selectedShop.tin || selectedShop.gst)){
+            if(item1.key === item[0]) return true;
+          }
+          return false;
+        });
+        isAddedToCart = !!isAddedToCart;
         item[1]['master_weight'] = riceProduct[item[0]].master_weight;
         item[1]["name"] = riceProduct[item[0]].name;
-        item[1]["addedToCart"] = false;
-        item[1]["quintals"] = 0;
-        item[1]["bags"] = 0;
-        item[1]["totalPrice"] = 0;
+        item[1]["addedToCart"] = isAddedToCart;
+        item[1]["quintals"] = isAddedToCart ? cartArray.find((item1) => {
+          if(item1.shopId === (selectedShop.tin || selectedShop.gst)){
+            if(item1.key === item[0]) return true;
+          }
+          return false;
+        }).value.quintals : 0;
+        item[1]["bags"] = isAddedToCart ? cartArray.find((item1) => {
+          if(item1.shopId === (selectedShop.tin || selectedShop.gst)){
+            if(item1.key === item[0]) return true;
+          }
+          return false;
+        }).value.bags : 0;
+        item[1]["totalPrice"] = isAddedToCart ? cartArray.find((item1) => {
+          if(item1.shopId === (selectedShop.tin || selectedShop.gst)){
+            if(item1.key === item[0]) return true;
+          }
+          return false;
+        }).value.totalPrice : 0;
       });
 
       Object.entries(brokenPrice).map((item) => {
+        let isAddedToCart = cartArray && (cartArray.length > 0) && cartArray.find((item1) => {
+          if(item1.shopId === (selectedShop.tin || selectedShop.gst)){
+            if(item1.key === item[0]) return true;
+          }
+          return false;
+        });
+        isAddedToCart = !!isAddedToCart;
         item[1]['master_weight'] = brokenProduct[item[0]].master_weight;
         item[1]["name"] = brokenProduct[item[0]].name;
-        item[1]["addedToCart"] = false;
-        item[1]["quintals"] = 0;
-        item[1]["totalPrice"] = 0;
-        item[1]["bags"] = 0;
+        item[1]["addedToCart"] = isAddedToCart;
+
+        item[1]["quintals"] = isAddedToCart ? cartArray.find((item1) => {
+          if(item1.shopId === (selectedShop.tin || selectedShop.gst)){
+            if(item1.key === item[0]) return true;
+          }
+          return false;
+        }).value.quintals : 0;
+        item[1]["totalPrice"] = isAddedToCart ? cartArray.find((item1) => {
+          if(item1.shopId === (selectedShop.tin || selectedShop.gst)){
+            if(item1.key === item[0]) return true;
+          }
+          return false;
+        }).value.totalPrice : 0;
+        item[1]["bags"] = isAddedToCart ? cartArray.find((item1) => {
+          if(item1.shopId === (selectedShop.tin || selectedShop.gst)){
+            if(item1.key === item[0]) return true;
+          }
+          return false;
+        }).value.bags : 0;
       });
 
 
@@ -111,6 +185,7 @@ export default class Cart extends Component {
       }
       this.changePriceForm(prices);
     });
+    console.log(this.state);
   }
 
   changeTab = (type) => {
@@ -153,7 +228,8 @@ export default class Cart extends Component {
         let cartObj = {
           key : priceArray[index][0],
           value : priceArray[index][1],
-          shopId : selectedShop.gst || selectedShop.tin
+          shopId : selectedShop.gst || selectedShop.tin,
+          shopName : selectedShop.name
         };
         cartArray.push(cartObj);
     }else{

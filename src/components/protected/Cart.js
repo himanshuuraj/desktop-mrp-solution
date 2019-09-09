@@ -34,7 +34,8 @@ export default class Cart extends Component {
           totalWeight: 0
         }
       },
-      renderYourOrder : false
+      renderYourOrder : false,
+      ownCartArray : []
     };
   }
 
@@ -51,7 +52,19 @@ export default class Cart extends Component {
       console.log('MOBILE IS ALREADY IN THE SESSION');
       this.fetchSubOrders(mobile);
     }
-    console.log(getCartArray(), "CartArray");
+    //console.log(getCartArray(), "CartArray");
+    let ownCartArray = getCartArray();
+    let shopList = [];
+    if(ownCartArray && ownCartArray.length > 0){
+      ownCartArray.forEach(item => {
+        if(!shopList.includes(item.shopId))
+          shopList.push(item.shopId);
+      })
+    }
+    this.setState({
+      ownCartArray,
+      shopList
+    });
   }
 
   fetchSubOrders(mobile) {
@@ -141,7 +154,20 @@ export default class Cart extends Component {
                   <div>
                   </div>
                   <div style={{ marginTop : 20 }}>
-                    
+                    {
+                        this.state.shopList.map((item, index) => {
+                            return (<div key={index}>
+                              ShopName - {item}
+                              {
+                                this.state.ownCartArray.map((item1, index) => {
+                                  return (<div>
+                                    {JSON.stringify(item1.value)}
+                                  </div>)
+                                })
+                              }
+                            </div>)
+                        })
+                    }
                   </div>
                 </div>
             </div>
