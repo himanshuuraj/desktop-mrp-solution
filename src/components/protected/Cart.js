@@ -56,10 +56,11 @@ export default class Cart extends Component {
     let shopList = [];
     if(ownCartArray && ownCartArray.length > 0){
       ownCartArray.forEach(item => {
-        if(!shopList.includes(item.shopId))
+        if(!shopList.find(item1 => item1.shopId == item.shopId))
           shopList.push({
             shopId : item.shopId,
-            shopName : item.shopName
+            shopName : item.shopName,
+            ...item
           });
       })
     }
@@ -136,12 +137,12 @@ export default class Cart extends Component {
     let { value, index, item } = obj;
     let master_weight = item.master_weight.replace("KG", "");
     if(obj.type == "bags"){
-      let quintals = master_weight * value;
+      let quintals = (master_weight * value) / 100;
       ownCartArray[index]["value"]["quintals"] = quintals;
       ownCartArray[index]["value"]["bags"] = value;
       ownCartArray[index]["value"]["totalPrice"] = quintals * item.Agent;
     }else if(obj.type == "quintals"){
-      let bags = value / master_weight;
+      let bags = (value * 100) / master_weight;
       ownCartArray[index]["value"]["quintals"] = value;
       ownCartArray[index]["value"]["bags"] = bags;
       ownCartArray[index]["value"]["totalPrice"] = value * item.Agent;
@@ -159,7 +160,7 @@ export default class Cart extends Component {
               zIndex: 9999,
               margin: 'auto', 
               backgroundColor : 'rgb(0,0,0,0.2)'}}>
-                <div style={{margin: '10%',backgroundColor: 'white',padding: '2%'}}>
+                <div style={{margin: '5%',backgroundColor: 'white',padding: '2%', height: '80vh', overflowY: 'scroll'}}>
                   <div style={{ display : 'flex' }}>
                     <h2 style={{ flex : 1 }}>
                       Your order
@@ -243,10 +244,107 @@ export default class Cart extends Component {
                         })
                     }
                   </div>
+                  
+                  <div style={{  }}>
+                    <Button onClick={e => {
+                          let { shopList, ownCartArray } = this.state;
+                          let obj = {
+                            "isSubAgentOrder": false,
+                            "orderMsg": "",
+                            "priority": 1,
+                            "status": "received",
+                            "time": new Date().getTime(),
+                            "uid": new Date().getTime(),
+                            "userName": window.sessionStorage.name,
+                            "orderId": new Date().getTime()
+                          };
+                          let cartDetail = {
+                            "discount_amount": 0,
+                            "grossPrice": 0,
+                            "selectedLorrySize": 0,
+                            "totalPrice": 0,
+                            "totalWeight": 0
+                          };
+                          let shopArray = [];
+                          for(let index = 0; index < shopList.length; index++){
+                              // item related to one shop
+                              let arr = ownCartArray.filter(item => item.shopId == shopList[index].shopId);
+                              let shopObj = {
+                                "address": arr[0].address,
+                                "areaId": arr[0].areaId,
+                                "areaName": arr[0].areaName,
+                                "city": arr[0].city,
+                                "district": arr[0].district,
+                                "mobile": arr[0].mobile,
+                                "name": arr[0].name,
+                                "shopDiscountAmount": 0,
+                                "shopGrossAmount": 0,
+                                "tin": arr[0].tin,
+                                "totalShopPrice": 116250,
+                                "totalWeight": 0,
+                                "gst": arr[0].gst
+                              };
+                              let items = { rice : {}, ravva : {}, roken : {}};
+                              for(let index = 0; index < arr.length; index++){
+                                let obj = arr[index];
+                                let price = obj["value"]["master_weight"] * obj["value"]["Agent"] * (obj["value"]["master_weight"] / 100);
+                                shopObj.shopGrossAmount += price;
+                                shopObj.totalWeight += obj["value"]["bags"] * obj["value"]["master_weight"];
+                                if(obj.type == "rice"){
+                                  let key =  obj["key"];
+                                  items.rice[key] = {
+                                    "bags": obj["value"]["bags"],
+                                    "discountedQuintalPrice": 4650,
+                                    "masterWeightPrice": obj["value"]["Agent"] * (obj["value"]["master_weight"] / 100),
+                                    "name": obj["value"]["name"],
+                                    "price": price,
+                                    "quintalWeightPrice": obj["value"]["Agent"],
+                                    "weight": obj["value"]["master_weight"]
+                                  }
+                                }else if(obj.type == "ravva"){
+                                  let key =  obj["key"];
+                                  items.ravva[key] = {
+                                    "bags": obj["value"]["bags"],
+                                    "discountedQuintalPrice": 4650,
+                                    "masterWeightPrice": obj["value"]["Agent"] * (obj["value"]["master_weight"] / 100),
+                                    "name": obj["value"]["name"],
+                                    "price": price,
+                                    "quintalWeightPrice": obj["value"]["Agent"],
+                                    "weight": obj["value"]["master_weight"]
+                                  }
+                                }else if(obj.type == "broken"){
+                                  let key =  obj["key"];
+                                  items.broken[key] = {
+                                    "bags": obj["value"]["bags"],
+                                    "discountedQuintalPrice": 4650,
+                                    "masterWeightPrice": obj["value"]["Agent"] * (obj["value"]["master_weight"] / 100),
+                                    "name": obj["value"]["name"],
+                                    "price": price,
+                                    "quintalWeightPrice": obj["value"]["Agent"],
+                                    "weight": obj["value"]["master_weight"]
+                                  }
+                                }
+                              }
+                              shopObj["items"] = items;
+                              shopArray.push(shopObj);
+                          }
+                          cartDetail["shopDetail"] = shopArray;
+                          for(let i = 0; i < shopArray.length; i++){
+                            cartDetail.grossPrice += shopArray[i].shopGrossAmount;
+                            cartDetail.totalWeight += shopArray[i].totalWeight;
+                            cartDetail.selectedLorrySize += this.state.lorryCapacity;
+                          }
+                          obj["cart"] = cartDetail;
+
+                  }}> Accept </Button>
+                  </div>
+                
                 </div>
             </div>
     );
   }
+
+
 
   render() {
     const { currentLoad } = this.state;
@@ -316,7 +414,7 @@ export default class Cart extends Component {
               zIndex: 9999,
               margin: 'auto', 
               backgroundColor : 'rgb(0,0,0,0.2)'}}>
-                <div style={{margin: '10%',backgroundColor: 'white',padding: '2%'}}>
+                <div style={{margin: '5%',backgroundColor: 'white',padding: '2%'}}>
                   <div style={{ display : 'flex' }}>
                     <h2 style={{ flex : 1 }}>
                       Details of order : [ <span className="head">{ modalOrderId }</span> ]

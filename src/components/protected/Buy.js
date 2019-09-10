@@ -208,12 +208,12 @@ export default class Cart extends Component {
     let { value, index, item } = obj;
     let master_weight = item.master_weight.replace("KG", "");
     if(obj.type == "bags"){
-      let quintals = master_weight * value;
+      let quintals = (master_weight * value) / 100;
       priceArray[index][1]["quintals"] = quintals;
       priceArray[index][1]["bags"] = value;
       priceArray[index][1]["totalPrice"] = quintals * item.Agent;
     }else if(obj.type == "quintals"){
-      let bags = value / master_weight;
+      let bags = (value * 100) / master_weight;
       priceArray[index][1]["quintals"] = value;
       priceArray[index][1]["bags"] = bags;
       priceArray[index][1]["totalPrice"] = value * item.Agent;
@@ -230,7 +230,8 @@ export default class Cart extends Component {
           value : priceArray[index][1],
           shopId : selectedShop.gst || selectedShop.tin,
           shopName : selectedShop.name,
-          type : this .state.selectedTab
+          type : this .state.selectedTab,
+          ...selectedShop
         };
         cartArray.push(cartObj);
     }else{
