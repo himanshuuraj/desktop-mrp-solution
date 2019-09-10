@@ -1,6 +1,6 @@
 import React, { Component } from 'react';
 import Lorry from './Lorry'
-import { ref, getCartArray, urlToGetImage } from '../../config/constants'
+import { ref, getCartArray, urlToGetImage, updateCartArray } from '../../config/constants'
 import { onFetchUserMobileNumber, getUserMobileNumber } from '../../helpers/auth'
 import { Header, Card, Table, Modal, Message, Label, Icon, Loader, Grid, Segment, Input, Confirm, Image, Button } from 'semantic-ui-react'
 
@@ -115,7 +115,8 @@ export default class Cart extends Component {
     orderData.orderId=orderId;
     newAcceptedOrders.push(orderData);
     const {...newSubOrders} = subOrders;
-    delete newSubOrders[subAgentMobile][orderId];
+    if(newSubOrders[subAgentMobile] && newSubOrders[subAgentMobile][orderId])
+      delete newSubOrders[subAgentMobile][orderId];
     const newLoad = currentLoad + (orderData.cart.totalWeight)/10;
     //const {[orderId]: ignore, ...newSubAgentOrders} = newSubOrders[subAgentMobile];
 
@@ -151,6 +152,8 @@ export default class Cart extends Component {
   }
 
   renderYourOrder = () => {
+    if(!this.state.shopList || this.state.shopList.length == 0)
+      return null;
     return (
       <div style={{ position: 'fixed',
               top: 0,
@@ -180,7 +183,7 @@ export default class Cart extends Component {
                   <div style={{ marginTop : 20 }}>
                     {
                         this.state.shopList.map((item, index) => {
-                            return (<div key={index}>
+                            return (<div key={index} style={{paddingTop : 16}}>
                               ShopName - {item.shopName}
                               {
                                 this.state.ownCartArray
@@ -245,8 +248,13 @@ export default class Cart extends Component {
                     }
                   </div>
                   
-                  <div style={{  }}>
-                    <Button onClick={e => {
+                  <div style={{ marginTop : 20 }}>
+                    <Button style={{
+                      width: 150,
+                      backgroundColor: 'green',
+                      color: 'white',
+                      fontSize: 14
+                    }} onClick={e => {
                           let { shopList, ownCartArray } = this.state;
                           let obj = {
                             "isSubAgentOrder": false,
@@ -287,41 +295,43 @@ export default class Cart extends Component {
                               let items = { rice : {}, ravva : {}, roken : {}};
                               for(let index = 0; index < arr.length; index++){
                                 let obj = arr[index];
-                                let price = obj["value"]["master_weight"] * obj["value"]["Agent"] * (obj["value"]["master_weight"] / 100);
+                                let master_weight = obj["value"]["master_weight"];
+                                master_weight = master_weight.replace("KG", "");
+                                let price = master_weight * obj["value"]["Agent"] * (master_weight / 100);
                                 shopObj.shopGrossAmount += price;
-                                shopObj.totalWeight += obj["value"]["bags"] * obj["value"]["master_weight"];
+                                shopObj.totalWeight += obj["value"]["bags"] * master_weight;
                                 if(obj.type == "rice"){
                                   let key =  obj["key"];
                                   items.rice[key] = {
                                     "bags": obj["value"]["bags"],
                                     "discountedQuintalPrice": 4650,
-                                    "masterWeightPrice": obj["value"]["Agent"] * (obj["value"]["master_weight"] / 100),
+                                    "masterWeightPrice": obj["value"]["Agent"] * (master_weight / 100),
                                     "name": obj["value"]["name"],
                                     "price": price,
                                     "quintalWeightPrice": obj["value"]["Agent"],
-                                    "weight": obj["value"]["master_weight"]
+                                    "weight": master_weight
                                   }
                                 }else if(obj.type == "ravva"){
                                   let key =  obj["key"];
                                   items.ravva[key] = {
                                     "bags": obj["value"]["bags"],
                                     "discountedQuintalPrice": 4650,
-                                    "masterWeightPrice": obj["value"]["Agent"] * (obj["value"]["master_weight"] / 100),
+                                    "masterWeightPrice": obj["value"]["Agent"] * (master_weight / 100),
                                     "name": obj["value"]["name"],
                                     "price": price,
                                     "quintalWeightPrice": obj["value"]["Agent"],
-                                    "weight": obj["value"]["master_weight"]
+                                    "weight": master_weight
                                   }
                                 }else if(obj.type == "broken"){
                                   let key =  obj["key"];
                                   items.broken[key] = {
                                     "bags": obj["value"]["bags"],
                                     "discountedQuintalPrice": 4650,
-                                    "masterWeightPrice": obj["value"]["Agent"] * (obj["value"]["master_weight"] / 100),
+                                    "masterWeightPrice": obj["value"]["Agent"] * (master_weight / 100),
                                     "name": obj["value"]["name"],
                                     "price": price,
                                     "quintalWeightPrice": obj["value"]["Agent"],
-                                    "weight": obj["value"]["master_weight"]
+                                    "weight": master_weight
                                   }
                                 }
                               }
@@ -335,6 +345,10 @@ export default class Cart extends Component {
                             cartDetail.selectedLorrySize += this.state.lorryCapacity;
                           }
                           obj["cart"] = cartDetail;
+
+                          this.setState({ shopList : [], ownCartArray : [] });
+                          updateCartArray([]);
+                          this.acceptOrder("orderId", obj);
 
                   }}> Accept </Button>
                   </div>
