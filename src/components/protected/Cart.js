@@ -248,7 +248,7 @@ export default class Cart extends Component {
                     }
                   </div>
                   
-                  <div style={{ marginTop : 20 }}>
+                  <div style={{ marginTop : 20, display : 'flex', justifyContent: 'center', alignItems: 'center' }}>
                     <Button style={{
                       width: 150,
                       backgroundColor: 'green',
@@ -370,7 +370,7 @@ export default class Cart extends Component {
 
     return (
       <div className="cart head" style={{position : 'relative'}}>
-        <Confirm
+        {/* <Confirm
           basic
           open={this.state.notificationOpen}
           content={this.state.notificationMsg}
@@ -378,7 +378,7 @@ export default class Cart extends Component {
           confirmButton={notificationConfirmLink}
           onCancel={this.handleNotificationCancel}
           onConfirm={this.handleNotificationConfirm}
-        />
+        /> */}
         <Grid>
           <Grid.Row>
             <Grid.Column>
@@ -452,6 +452,31 @@ export default class Cart extends Component {
                     <Button primary content='CLOSE' onClick={ this.closeTheModal.bind(this) } />
                     <Button negative content='REJECT' onClick={this.rejectOrder.bind(this,modalOrderId,modelOrderData)} />
                     <Button positive icon='checkmark' labelPosition='right' content='ACCEPT' onClick={this.acceptOrder.bind(this,modalOrderId,modelOrderData)} />
+                  </div>
+                </div>
+            </div>
+          )
+        }
+
+        {
+          (this.state.notificationOpen) && (
+            <div style={{ position: 'fixed',
+              top: 0,
+              left: 0,
+              height : '100vh',
+              width : '100%',
+              zIndex: 9999,
+              backgroundColor : 'rgb(0,0,0,0.2)'}}>
+                <div style={{ width : '100%', height: '100%', position : 'relative'}}>
+                  <div style={{ position : 'absolute',padding : '2%', width: 400, height : 200, top: 0, bottom : 0, left : 0, right : 0, margin: 'auto', backgroundColor: 'white' }}>
+                    <div style={{ height: '60%', display: "flex", justifyContent: "center", alignItems: "center" }}>
+                      <span>{ this.state.notificationMsg }</span>
+                    </div>
+                    <div style={{ width : '80%', marginLeft : '10%' }}>
+                      <Button primary style={{ width: '100%', marginTop : '10%', height: 40, fontSize: 14 }} onClick={e => {
+                          this.setState({ notificationOpen: false });
+                      }}> OK </Button>
+                    </div>
                   </div>
                 </div>
             </div>
@@ -996,7 +1021,7 @@ export default class Cart extends Component {
     var mathRandom = Math.floor((Math.random())*1000);
 
     var orderId= (now.getDate()).toString()  + monthsText[now.getMonth()] + (now.getYear()%10).toString() + '-'+
-              userName.substring(0,3).toUpperCase() + uid.substring(0,3) +'-'+ mathRandom.toString();
+              userName.substring(0,3).toUpperCase() + uid.substring(0,3) +'-'+ mathRandom.toString() + "-W";
 
 
     var usersRef = ref.child('users/' + uid );

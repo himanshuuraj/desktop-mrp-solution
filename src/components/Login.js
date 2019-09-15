@@ -15,11 +15,9 @@ export default class Login extends Component {
     e.preventDefault()
     login(this.email.value, this.pw.value)
       .then((data) => {
-        alert("Order Submitted Successfully !!!")
         getUserMobileNumber(data.uid)
       })
       .catch((error) => {
-        alert("OOPS!!! There is sonething wrong");
         this.setState(setErrorMsg('Invalid username/password.'))
       })
   }
