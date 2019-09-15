@@ -45,6 +45,7 @@ export default class Cart extends Component {
           text : item.name
         };
       });
+      shops = shops.sort(function(x,y){return ((x.text == y.text) ? 0 : ((x.text > y.text) ? 1 : -1 ));});
       this.setState({ shops });
     });
   }

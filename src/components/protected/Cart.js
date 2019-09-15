@@ -395,7 +395,10 @@ export default class Cart extends Component {
                 { this.renderSubOrders() }
                 <Button style={{
                   width : '100%',
-                  backgroundColor : '#2185d0'
+                  backgroundColor : '#16a085',
+                  color : 'white',
+                  marginTop : 16,
+                  fontSize: 14
                 }} onClick={e => {
                   this.setState({
                     renderYourOrder : true
@@ -694,7 +697,7 @@ export default class Cart extends Component {
 
     if(!orderedShops.length) {
       acceptedOrderShopsList.push(
-        <Message key='acceptedOrderMsg' color='orange' floating content='No itesms in the cart. View/Accept sub-agent orders on left to place an order to the Factory!' />
+        <Message key='acceptedOrderMsg' color='orange' floating content='No items in the cart. View/Accept sub-agent orders on left to place an order to the Factory!' />
       );
     }
     return acceptedOrderShopsList;
