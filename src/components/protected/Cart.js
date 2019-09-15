@@ -161,14 +161,14 @@ export default class Cart extends Component {
               left: 0,
               right: 0,
               zIndex: 9999,
-              margin: 'auto', 
+              margin: 'auto',
               backgroundColor : 'rgb(0,0,0,0.2)'}}>
                 <div style={{margin: '5%',backgroundColor: 'white',padding: '2%', height: '80vh', overflowY: 'scroll'}}>
                   <div style={{ display : 'flex' }}>
                     <h2 style={{ flex : 1 }}>
                       Your order
                     </h2>
-                    <div 
+                    <div
                     onClick = {e => {
                       this.setState(
                         { renderYourOrder : false}
@@ -214,7 +214,7 @@ export default class Cart extends Component {
                                             <h5>
                                               Bags
                                             </h5>
-                                              <Input 
+                                              <Input
                                               value={item1.value.bags}
                                               onChange={(e, data) => {
                                                 this.updateUI({ type : 'bags', value : data.value, index, item : item1.value});
@@ -225,7 +225,7 @@ export default class Cart extends Component {
                                             </h5>
                                           </Grid.Column>
                                           <Grid.Column style={{width : '20%', display: 'flex', flexDirection : 'column', justifyContent : 'center', alignItems : 'center'}}>
-                                              <Button 
+                                              <Button
                                               style={{
                                                 backgroundColor : 'coral',
                                                 width: "80%",
@@ -247,7 +247,7 @@ export default class Cart extends Component {
                         })
                     }
                   </div>
-                  
+
                   <div style={{ marginTop : 20, display : 'flex', justifyContent: 'center', alignItems: 'center' }}>
                     <Button style={{
                       width: 150,
@@ -321,7 +321,7 @@ export default class Cart extends Component {
                                     "name": obj["value"]["name"],
                                     "price": price,
                                     "quintalWeightPrice": obj["value"]["Agent"],
-                                    "weight": master_weight
+                                    "weight": (obj["value"]["bags"] * master_weight) / 100
                                   }
                                 }else if(obj.type == "broken"){
                                   items.broken[key] = {
@@ -331,7 +331,7 @@ export default class Cart extends Component {
                                     "name": obj["value"]["name"],
                                     "price": price,
                                     "quintalWeightPrice": obj["value"]["Agent"],
-                                    "weight": master_weight
+                                    "weight": (obj["value"]["bags"] * master_weight) / 100
                                   }
                                 }
                               }
@@ -353,7 +353,7 @@ export default class Cart extends Component {
 
                   }}> Accept </Button>
                   </div>
-                
+
                 </div>
             </div>
     );
@@ -364,7 +364,7 @@ export default class Cart extends Component {
   render() {
     const { currentLoad } = this.state;
     const { modalOrderId, modalOpen, modelOrderData, modalLoading } = this.state;
-    const notificationConfirmLink = <a href={`view/${this.state.notificationOrderId}`} target="_blank"><strong>Take me to Order</strong></a>;
+    const notificationConfirmLink = <a href={`print/${this.state.notificationOrderId}`} target="_blank"><strong>Take me to Order</strong></a>;
     // <Input label={`currentLoad`} placeholder='currentLoad' width={4} onChange={ this.onChangeValue.bind(this, 'currentLoad')} value={currentLoad} />
 
 
@@ -421,7 +421,7 @@ export default class Cart extends Component {
             </Grid.Column>
           </Grid.Row>
         </Grid>
-        
+
         {
           modalOpen && (
             <div style={{ position: 'fixed',
@@ -430,14 +430,14 @@ export default class Cart extends Component {
               left: 0,
               right: 0,
               zIndex: 9999,
-              margin: 'auto', 
+              margin: 'auto',
               backgroundColor : 'rgb(0,0,0,0.2)'}}>
                 <div style={{margin: '5%',backgroundColor: 'white',padding: '2%'}}>
                   <div style={{ display : 'flex' }}>
                     <h2 style={{ flex : 1 }}>
                       Details of order : [ <span className="head">{ modalOrderId }</span> ]
                     </h2>
-                    <div 
+                    <div
                     onClick = {e => {
                       this.closeTheModal();
                     }}
@@ -482,7 +482,7 @@ export default class Cart extends Component {
             </div>
           )
         }
-        
+
         {
           this.state.renderYourOrder && this.renderYourOrder()
         }
@@ -851,7 +851,8 @@ export default class Cart extends Component {
       const productTypeItems = items[productType];
       Object.keys(productTypeItems).forEach( product => {
         const { name, bags, weight, quintalWeightPrice, discountedQuintalPrice, price } = productTypeItems[product];
-        const discount = quintalWeightPrice - discountedQuintalPrice;
+      //  const discount = quintalWeightPrice - discountedQuintalPrice;
+      const discount=0;
         itemsArray.push(
           <Table.Row key={product} style={ {fontSize :'24px'} }>
             <Table.Cell textAlign='left'>{name}</Table.Cell>
@@ -1063,9 +1064,9 @@ export default class Cart extends Component {
   showNotificationMsg(notificationType, orderId) {
     let msg = '';
     if(notificationType === SUCCESS) {
-      msg = <p>Order <a href={`view/${orderId}`} target="_blank"><strong>{orderId}</strong> </a>   is successfully placed. Check Orders tab for updates </p>;
+      msg = <p>Order <a href={`print/${orderId}`} target="_blank"><strong>{orderId}</strong> </a>   is successfully placed. Check Orders tab for updates </p>;
     } else {
-      msg = <p>Unable to submit order <a href={`view/${orderId}`} target="_blank"><strong>{orderId}</strong></a>. Contact Lalitha Industries. </p>;
+      msg = <p>Unable to submit order <a href={`print/${orderId}`} target="_blank"><strong>{orderId}</strong></a>. Contact Lalitha Industries. </p>;
     }
     this.setState({
       notificationMsg: msg,

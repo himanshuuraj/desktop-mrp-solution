@@ -153,7 +153,8 @@ export default class OrderDetails extends Component {
       const productTypeItems = items[productType];
       Object.keys(productTypeItems).forEach( product => {
         const { name, bags, weight, discountedQuintalPrice = 0, price = 0, quintalWeightPrice = 0 } = productTypeItems[product];
-        let discount = quintalWeightPrice - discountedQuintalPrice;
+      //  let discount = quintalWeightPrice - discountedQuintalPrice;
+      let discount=0;
         if(discount) {
           discount.toFixed(2);
         }
@@ -163,7 +164,7 @@ export default class OrderDetails extends Component {
             <Table.Cell textAlign='left'>{name}</Table.Cell>
             <Table.Cell textAlign='right'>{bags}</Table.Cell>
             <Table.Cell textAlign='right'>{weight}</Table.Cell>
-            <Table.Cell textAlign='right'>{discountedQuintalPrice.toLocaleString('en-IN')}</Table.Cell>
+            <Table.Cell textAlign='right'>{quintalWeightPrice.toLocaleString('en-IN')}</Table.Cell>
             <Table.Cell textAlign='right'>{grossPrice.toLocaleString('en-IN')}</Table.Cell>
             <Table.Cell textAlign='right'>{discount}</Table.Cell>
             <Table.Cell textAlign='right'>{price.toLocaleString('en-IN')}</Table.Cell>
