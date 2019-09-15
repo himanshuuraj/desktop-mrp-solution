@@ -289,6 +289,7 @@ export default class Cart extends Component {
                                 "shopGrossAmount": 0,
                                 "tin": arr[0].tin,
                                 "totalShopPrice": 0,
+                                "totalPrice" : 0,
                                 "totalWeight": 0,
                                 "gst": arr[0].gst
                               };
@@ -305,7 +306,7 @@ export default class Cart extends Component {
                                 if(obj.type == "rice"){
                                   items.rice[key] = {
                                     "bags": obj["value"]["bags"],
-                                    "discountedQuintalPrice": 0,
+                                    "discountedQuintalPrice": price,
                                     "masterWeightPrice": obj["value"]["Agent"] * (master_weight / 100),
                                     "name": obj["value"]["name"],
                                     "price": price,
@@ -315,7 +316,7 @@ export default class Cart extends Component {
                                 }else if(obj.type == "ravva"){
                                   items.ravva[key] = {
                                     "bags": obj["value"]["bags"],
-                                    "discountedQuintalPrice": 0,
+                                    "discountedQuintalPrice": price,
                                     "masterWeightPrice": obj["value"]["Agent"] * (master_weight / 100),
                                     "name": obj["value"]["name"],
                                     "price": price,
@@ -325,7 +326,7 @@ export default class Cart extends Component {
                                 }else if(obj.type == "broken"){
                                   items.broken[key] = {
                                     "bags": obj["value"]["bags"],
-                                    "discountedQuintalPrice": 0,
+                                    "discountedQuintalPrice": price,
                                     "masterWeightPrice": obj["value"]["Agent"] * (master_weight / 100),
                                     "name": obj["value"]["name"],
                                     "price": price,
