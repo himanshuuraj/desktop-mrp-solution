@@ -288,7 +288,7 @@ export default class Cart extends Component {
                                 "shopDiscountAmount": 0,
                                 "shopGrossAmount": 0,
                                 "tin": arr[0].tin,
-                                "totalShopPrice": 116250,
+                                "totalShopPrice": 0,
                                 "totalWeight": 0,
                                 "gst": arr[0].gst
                               };
@@ -297,25 +297,25 @@ export default class Cart extends Component {
                                 let obj = arr[index];
                                 let master_weight = obj["value"]["master_weight"];
                                 master_weight = master_weight.replace("KG", "");
-                                let price = master_weight * obj["value"]["Agent"] * (master_weight / 100);
+                                let price = obj["value"]["Agent"] * (master_weight * obj["value"]["bags"] / 100);
                                 shopObj.shopGrossAmount += price;
-                                shopObj.totalWeight += obj["value"]["bags"] * master_weight;
+                                shopObj.totalPrice += price;
+                                shopObj.totalWeight += (obj["value"]["bags"] * master_weight) / 100;
+                                let key =  obj["key"];
                                 if(obj.type == "rice"){
-                                  let key =  obj["key"];
                                   items.rice[key] = {
                                     "bags": obj["value"]["bags"],
-                                    "discountedQuintalPrice": 4650,
+                                    "discountedQuintalPrice": 0,
                                     "masterWeightPrice": obj["value"]["Agent"] * (master_weight / 100),
                                     "name": obj["value"]["name"],
                                     "price": price,
                                     "quintalWeightPrice": obj["value"]["Agent"],
-                                    "weight": master_weight
+                                    "weight": (obj["value"]["bags"] * master_weight) / 100
                                   }
                                 }else if(obj.type == "ravva"){
-                                  let key =  obj["key"];
                                   items.ravva[key] = {
                                     "bags": obj["value"]["bags"],
-                                    "discountedQuintalPrice": 4650,
+                                    "discountedQuintalPrice": 0,
                                     "masterWeightPrice": obj["value"]["Agent"] * (master_weight / 100),
                                     "name": obj["value"]["name"],
                                     "price": price,
@@ -323,10 +323,9 @@ export default class Cart extends Component {
                                     "weight": master_weight
                                   }
                                 }else if(obj.type == "broken"){
-                                  let key =  obj["key"];
                                   items.broken[key] = {
                                     "bags": obj["value"]["bags"],
-                                    "discountedQuintalPrice": 4650,
+                                    "discountedQuintalPrice": 0,
                                     "masterWeightPrice": obj["value"]["Agent"] * (master_weight / 100),
                                     "name": obj["value"]["name"],
                                     "price": price,
@@ -341,6 +340,7 @@ export default class Cart extends Component {
                           cartDetail["shopDetail"] = shopArray;
                           for(let i = 0; i < shopArray.length; i++){
                             cartDetail.grossPrice += shopArray[i].shopGrossAmount;
+                            cartDetail.totalPrice += shopArray[i].totalPrice;
                             cartDetail.totalWeight += shopArray[i].totalWeight;
                             cartDetail.selectedLorrySize += this.state.lorryCapacity;
                           }
@@ -930,7 +930,8 @@ export default class Cart extends Component {
     Object.keys(items).forEach(productType => {
       const products = items[productType];
       Object.keys(products).forEach(product => {
-        const { weight, price } = products[product];
+        let { weight, price } = products[product];
+        weight = weight || 0;
         totalWeight += parseFloat(weight);
         totalPrice += parseFloat(price);
       });
