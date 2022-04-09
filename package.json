@@ -9,7 +9,7 @@
     "bootstrap": "^3.3.7",
     "dotenv": "^8.0.0",
     "firebase": "^3.6.1",
-    "moment": "^2.19.1",
+    "moment": "^2.29.2",
     "react": "^15.4.0",
     "react-data-grid": "^2.0.60",
     "react-data-grid-addons": "^2.0.60",
